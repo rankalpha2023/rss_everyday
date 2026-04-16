@@ -133,10 +133,10 @@ func getDatetime(times ...*time.Time) *time.Time {
 func GetPostInfo(rss RssInfo) []*gofeed.Item {
 	var msg = make([]*gofeed.Item, 0)
 
-	now := time.Now().UTC()
+	now := time.Now()
 	startTime := now.Add(-(time.Duration(*StartBy) * time.Hour))
-	start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), startTime.Hour(), 0, 0, 0, now.Location()).Unix()
-	end := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, now.Location()).Unix()
+	start := startTime.Unix()
+	end := now.Unix()
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(rss.Url)
