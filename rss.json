@@ -2,11 +2,11 @@
   "rss_info": [
     {
       "title": "阮一峰的网络日志",
-      "url": "http://feeds.feedburner.com/ruanyifeng"
+      "url": "https://www.ruanyifeng.com/blog/atom.xml"
     },    
     {
-      "title": "xiaohongshu ian",
-      "url": "https://rss-worker.cloudmeta.workers.dev/rss/xiaohongshu/user/5a33cae8db2e6019ea79e03b"
+      "title": "GitHub Blog",
+      "url": "https://github.blog/all.atom"
     }
   ]
 }

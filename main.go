@@ -138,18 +138,31 @@ func GetPostInfo(rss RssInfo) []*gofeed.Item {
 	start := startTime.Unix()
 	end := now.Unix()
 
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(rss.Url)
+	maxRetries := 3
+	var feed *gofeed.Feed
+	var err error
+	
+	for i := 0; i < maxRetries; i++ {
+		fp := gofeed.NewParser()
+		feed, err = fp.ParseURL(rss.Url)
+		if err == nil {
+			break
+		}
+		log.Printf("Attempt %d: parse url err: url=%s, %v", i+1, rss.Url, err)
+		time.Sleep(time.Duration(i+1) * time.Second)
+	}
+	
 	if err != nil {
-		log.Printf("parse url err: url=%s, %v", rss.Url, err)
-	} else {
-		for _, item := range feed.Items {
-			debugInfof("Title=%s, Url=%s, Published=%v, Updated=%v", item.Title, item.Link, item.Published, item.Updated)
+		log.Printf("Final error: parse url err: url=%s, %v", rss.Url, err)
+		return msg
+	}
+	
+	for _, item := range feed.Items {
+		debugInfof("Title=%s, Url=%s, Published=%v, Updated=%v", item.Title, item.Link, item.Published, item.Updated)
 
-			parseDatetime := getDatetime(item.PublishedParsed, item.UpdatedParsed)
-			if parseDatetime != nil && parseDatetime.Unix() >= start && parseDatetime.Unix() < end {
-				msg = append(msg, item)
-			}
+		parseDatetime := getDatetime(item.PublishedParsed, item.UpdatedParsed)
+		if parseDatetime != nil && parseDatetime.Unix() >= start && parseDatetime.Unix() < end {
+			msg = append(msg, item)
 		}
 	}
 
@@ -174,7 +187,13 @@ func makeDisplayMsg(item *gofeed.Item) string {
 
 func initDeDuper() *dedup.DeDup[*gofeed.Item] {
 	deduper, err := dedup.NewDeDup(*DigestFile, func(elem *gofeed.Item) string {
-		digest := md5.Sum([]byte(elem.Title + elem.Content))
+		content := ""
+		if elem.Content != "" {
+			content = elem.Content
+		} else if elem.Description != "" {
+			content = elem.Description
+		}
+		digest := md5.Sum([]byte(elem.Title + content + elem.Link))
 		return fmt.Sprintf("%x", digest)
 	})
 	if err != nil {
