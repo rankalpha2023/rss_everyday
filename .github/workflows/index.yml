@@ -37,4 +37,4 @@ jobs:
         if: steps.verify_diff.outputs.changed == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{secrets.INDEX_ACTION_TOKEN}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
